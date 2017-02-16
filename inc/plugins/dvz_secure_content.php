@@ -1,31 +1,32 @@
 <?php
 /* by Tomasz 'Devilshakerz' Mlynski [devilshakerz.com]; Copyright (C) 2015-2017
+ myBB 1.6 compatibility by Matias Garcia Isaia (https://github.com/mgarciaisaia)
  released under Creative Commons BY-NC-SA 4.0 license: https://creativecommons.org/licenses/by-nc-sa/4.0/ */
 
-$plugins->add_hook('parse_message', ['dvz_sc', 'parse_message']);
-$plugins->add_hook('usercp_avatar_start', ['dvz_sc', 'usercp_avatar_start']);
-$plugins->add_hook('usercp_avatar_end', ['dvz_sc', 'usercp_avatar_end']);
-$plugins->add_hook('usercp_do_avatar_start', ['dvz_sc', 'usercp_do_avatar_start']);
-$plugins->add_hook('usercp_do_avatar_end', ['dvz_sc', 'usercp_do_avatar_end']);
-$plugins->add_hook('modcp_do_editprofile_end', ['dvz_sc', 'modcp_do_editprofile_end']);
-$plugins->add_hook('admin_user_users_edit_graph', ['dvz_sc', 'admin_user_users_edit_graph']);
-$plugins->add_hook('admin_user_users_edit', ['dvz_sc', 'admin_user_users_edit']);
-$plugins->add_hook('admin_user_users_edit_commit_start', ['dvz_sc', 'admin_user_users_edit_commit_start']);
-$plugins->add_hook('admin_config_settings_begin', ['dvz_sc', 'admin_config_settings_begin']);
-$plugins->add_hook('admin_settings_print_peekers', ['dvz_sc', 'admin_settings_print_peekers']);
-$plugins->add_hook('admin_config_plugins_begin', ['dvz_sc', 'admin_config_plugins_begin']);
+$plugins->add_hook('parse_message', 'backport_dvz_sc__parse_message');
+$plugins->add_hook('usercp_avatar_start', 'backport_dvz_sc__usercp_avatar_start');
+$plugins->add_hook('usercp_avatar_end', 'backport_dvz_sc__usercp_avatar_end');
+$plugins->add_hook('usercp_do_avatar_start', 'backport_dvz_sc__usercp_do_avatar_start');
+$plugins->add_hook('usercp_do_avatar_end', 'backport_dvz_sc__usercp_do_avatar_end');
+$plugins->add_hook('modcp_do_editprofile_end', 'backport_dvz_sc__modcp_do_editprofile_end');
+$plugins->add_hook('admin_user_users_edit_graph', 'backport_dvz_sc__admin_user_users_edit_graph');
+$plugins->add_hook('admin_user_users_edit', 'backport_dvz_sc__admin_user_users_edit');
+$plugins->add_hook('admin_user_users_edit_commit_start', 'backport_dvz_sc__admin_user_users_edit_commit_start');
+$plugins->add_hook('admin_config_settings_begin', 'backport_dvz_sc__admin_config_settings_begin');
+$plugins->add_hook('admin_settings_print_peekers', 'backport_dvz_sc__admin_settings_print_peekers');
+$plugins->add_hook('admin_config_plugins_begin', 'backport_dvz_sc__admin_config_plugins_begin');
 
 function dvz_secure_content_info()
 {
     return [
         'name'           => 'DVZ Secure Content',
         'description'    => 'Filters user-generated content from insecure protocols (non-HTTPS).' . dvz_sc::description_appendix(),
-        'website'        => 'https://devilshakerz.com/',
-        'author'         => 'Tomasz \'Devilshakerz\' Mlynski',
+        'website'        => 'https://github.com/mgarciaisaia/dvz_secure_content',
+        'author'         => 'Tomasz \'Devilshakerz\' Mlynski + Matias Garcia Isaia',
         'authorsite'     => 'https://devilshakerz.com/',
-        'version'        => '1.1.3',
+        'version'        => '1.1.3-myBB1.6',
         'codename'       => 'dvz_secure_content',
-        'compatibility'  => '18*',
+        'compatibility'  => '16*',
     ];
 }
 
@@ -261,7 +262,7 @@ class dvz_sc
     {
         global $mybb, $db;
 
-        $avatarUrl = trim($mybb->get_input('avatarurl'));
+        $avatarUrl = trim($mybb->input['avatarurl']);
 
         if (!empty($mybb->input['remove'])) {
 
@@ -402,37 +403,37 @@ class dvz_sc
 
         $lang->load('dvz_secure_content');
 
-        if ($mybb->get_input('dvz_sc_task_embed_templates') && verify_post_check($mybb->get_input('my_post_key'))) {
+        if ($mybb->input['dvz_sc_task_embed_templates'] && verify_post_check($mybb->input['my_post_key'])) {
             dvz_sc::replace_embed_templates(true);
             flash_message($lang->dvz_sc_task_embed_templates_message, 'success');
             admin_redirect('index.php?module=config-plugins');
         }
 
-        if ($mybb->get_input('dvz_sc_task_embed_templates_revert') && verify_post_check($mybb->get_input('my_post_key'))) {
+        if ($mybb->input['dvz_sc_task_embed_templates_revert'] && verify_post_check($mybb->input['my_post_key'])) {
             dvz_sc::replace_embed_templates(false);
             flash_message($lang->dvz_sc_task_embed_templates_revert_message, 'success');
             admin_redirect('index.php?module=config-plugins');
         }
 
-        if ($mybb->get_input('dvz_sc_task_replace_gravatar') && verify_post_check($mybb->get_input('my_post_key'))) {
+        if ($mybb->input['dvz_sc_task_replace_gravatar'] && verify_post_check($mybb->input['my_post_key'])) {
             dvz_sc::replace_gravatar_avatars();
             flash_message($lang->dvz_sc_task_replace_gravatar_message, 'success');
             admin_redirect('index.php?module=config-plugins');
         }
 
-        if ($mybb->get_input('dvz_sc_task_remove_insecure_avatars') && verify_post_check($mybb->get_input('my_post_key'))) {
+        if ($mybb->input['dvz_sc_task_remove_insecure_avatars'] && verify_post_check($mybb->input['my_post_key'])) {
             dvz_sc::remove_insecure_avatars();
             flash_message($lang->dvz_sc_task_remove_insecure_avatars_message, 'success');
             admin_redirect('index.php?module=config-plugins');
         }
 
-        if ($mybb->get_input('dvz_sc_task_proxy_avatar_urls') && verify_post_check($mybb->get_input('my_post_key'))) {
+        if ($mybb->input['dvz_sc_task_proxy_avatar_urls'] && verify_post_check($mybb->input['my_post_key'])) {
             dvz_sc::proxy_avatar_urls();
             flash_message($lang->dvz_sc_task_proxy_avatar_urls_message, 'success');
             admin_redirect('index.php?module=config-plugins');
         }
 
-        if ($mybb->get_input('dvz_sc_task_restore_proxy_avatar_urls') && verify_post_check($mybb->get_input('my_post_key'))) {
+        if ($mybb->input['dvz_sc_task_restore_proxy_avatar_urls'] && verify_post_check($mybb->input['my_post_key'])) {
             dvz_sc::restore_proxy_avatar_urls();
             flash_message($lang->dvz_sc_task_restore_proxy_avatar_urls_message, 'success');
             admin_redirect('index.php?module=config-plugins');
@@ -807,4 +808,41 @@ class dvz_sc
         return $mybb->settings['dvz_sc_' . $name];
     }
 
+}
+
+function backport_dvz_sc__parse_message(&$message) {
+  dvz_sc::parse_message($message);
+}
+function backport_dvz_sc__usercp_avatar_start() {
+  dvz_sc::usercp_avatar_start();
+}
+function backport_dvz_sc__usercp_avatar_end() {
+  dvz_sc::usercp_avatar_end();
+}
+function backport_dvz_sc__usercp_do_avatar_start() {
+  dvz_sc::usercp_do_avatar_start();
+}
+function backport_dvz_sc__usercp_do_avatar_end() {
+  dvz_sc::usercp_do_avatar_end();
+}
+function backport_dvz_sc__modcp_do_editprofile_end() {
+  dvz_sc::modcp_do_editprofile_end();
+}
+function backport_dvz_sc__admin_user_users_edit_graph() {
+  dvz_sc::admin_user_users_edit_graph();
+}
+function backport_dvz_sc__admin_user_users_edit() {
+  dvz_sc::admin_user_users_edit();
+}
+function backport_dvz_sc__admin_user_users_edit_commit_start() {
+  dvz_sc::admin_user_users_edit_commit_start();
+}
+function backport_dvz_sc__admin_config_settings_begin() {
+  dvz_sc::admin_config_settings_begin();
+}
+function backport_dvz_sc__admin_settings_print_peekers($peekers) {
+  dvz_sc::admin_settings_print_peekers($peekers);
+}
+function backport_dvz_sc__admin_config_plugins_begin() {
+  dvz_sc::admin_config_plugins_begin();
 }
